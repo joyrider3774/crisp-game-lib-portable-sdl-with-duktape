@@ -35,8 +35,8 @@
     #define M_PI_4 0.78539816339744830962
 #endif
 
-#define DEFAULT_GLOW_SIZE 6 * DEFAULT_WINDOW_WIDTH / 240
-#define DEFAULT_GLOW_INTENSITY 96
+#define DEFAULT_GLOW_SIZE 6
+#define DEFAULT_GLOW_INTENSITY 128
 #define DEFAULT_OVERLAY 0
 #define DEFAULT_GLOWENABLED false
 
@@ -61,13 +61,8 @@ static int prevKeys[SDLK_LAST];
 static float scale = 1.0f;
 static int viewW = DEFAULT_WINDOW_WIDTH;
 static int viewH = DEFAULT_WINDOW_HEIGHT;
-static int origViewW = DEFAULT_WINDOW_WIDTH;
-static int origViewH = DEFAULT_WINDOW_HEIGHT;
 static Uint32 frameticks = 0;
 static Uint32 frameTime = 0;
-static unsigned char clearColorR = 0;
-static unsigned char clearColorG = 0;
-static unsigned char clearColorB = 0;
 static Uint32 clearColor = 0;
 static float audioVolume = 1.00f;
 static int offsetX = 0;
@@ -431,7 +426,7 @@ static void resetCharacterSprite() {
 }
 
 // Simulate buggy sinf: restricts output to 0, 1, -1 based on 90° increments
-static float buggySinf(float angle)
+static float buggySinf(float angle) 
 {
     TRIG_NORMALIZE_ANGLE(angle);  // Normalize angle to [0, 2p)
 
@@ -944,9 +939,7 @@ void md_clearScreen(unsigned char r, unsigned char g, unsigned char b)
 {
     if(!screen)
         return;
-    clearColorR = r;
-    clearColorG = g;
-    clearColorB = b;
+
     clearColor = SDL_MapRGB(screen->format, (Uint8)r, (Uint8)g, (Uint8)b);
     SDL_FillRect(screen, NULL, clearColor);
 }
@@ -954,16 +947,7 @@ void md_clearScreen(unsigned char r, unsigned char g, unsigned char b)
 void md_initView(int w, int h) 
 {
     if(!screen)
-        return; 
-    
-    WINDOW_WIDTH = screen->w;
-    WINDOW_HEIGHT = screen->h;
-    float wscalex = (float)WINDOW_WIDTH / (float)DEFAULT_WINDOW_WIDTH;
-    float wscaley = (float)WINDOW_HEIGHT / (float)DEFAULT_WINDOW_HEIGHT;
-    wscale = (wscaley < wscalex) ? wscaley : wscalex;
-
-    origViewW = w;
-    origViewH = h;
+        return;
     float xScale = (float)WINDOW_WIDTH / w;
     float yScale = (float)WINDOW_HEIGHT / h;
     if (yScale < xScale)
@@ -982,8 +966,7 @@ void md_initView(int w, int h)
         gScale = gScaleY;
     else
         gScale = gScaleX;
-    glowSize = (float)DEFAULT_GLOW_SIZE / gScale * wscale ;
-
+    glowSize = (float)DEFAULT_GLOW_SIZE / gScale ;
     mouseX = (viewW >> 1);
     mouseY = (viewH >> 1);
 
@@ -1025,15 +1008,6 @@ static void update()
     SDL_Event event;
     while(SDL_PollEvent(&event))
     {
-        if (event.type == SDL_VIDEORESIZE)
-        {
-            if(screen)
-                SDL_FreeSurface(screen);
-            screen = SDL_SetVideoMode(event.resize.w, event.resize.h, 0, videoFlags);
-            md_initView(origViewW, origViewH);
-            md_clearScreen(clearColorR, clearColorG, clearColorB);
-        }
-
         if(event.type == SDL_KEYDOWN)
         {
             keys[event.key.keysym.sym] = 1;
@@ -1205,7 +1179,11 @@ static void update()
     if(!isInMenu && (overlay == 1))
     {
         SDL_Rect dst = { 0 };
-
+        
+        float wscalex = (float)WINDOW_WIDTH / (float)DEFAULT_WINDOW_WIDTH;
+        float wscaley = (float)WINDOW_HEIGHT / (float)DEFAULT_WINDOW_HEIGHT;
+        float wscale = (wscaley < wscalex) ? wscaley : wscalex;
+        
         // Always ensure minimum 1 pixel
         float pixelSize = ceilf(1.0f * wscale);
         
@@ -1445,8 +1423,6 @@ int main(int argc, char **argv)
 
 		if(fullScreen)
 			videoFlags |= SDL_FULLSCREEN;
-        else
-            videoFlags |= SDL_RESIZABLE;
         
         //needed for scanline effect
         videoFlags |= SDL_SRCALPHA;
@@ -1456,6 +1432,11 @@ int main(int argc, char **argv)
 		{
 			SDL_WM_SetCaption( "Crisp Game Lib Portable Sdl 1", NULL);
 			printf("Succesfully Set %dx%d\n",WINDOW_WIDTH, WINDOW_HEIGHT);
+            SDL_ShowCursor(SDL_DISABLE);
+            float wscalex = (float)WINDOW_WIDTH / (float)DEFAULT_WINDOW_WIDTH;
+            float wscaley = (float)WINDOW_HEIGHT / (float)DEFAULT_WINDOW_HEIGHT;
+            wscale = (wscaley < wscalex) ? wscaley : wscalex;
+            glowSize = (float)DEFAULT_GLOW_SIZE * wscale;
             initCharacterSprite();
             initGame();
             if(makescreenshots)
@@ -1509,8 +1490,9 @@ int main(int argc, char **argv)
                 if(!found)
                     memset(startgame, 0, 100);
             }
-            int skip = 10;
+            // init prevMouseX & Y
             SDL_GetMouseState(&prevRealMouseX, &prevRealMouseY);
+            int skip = 10;
             while(quit == 0)
             {
                 frameticks = SDL_GetTicks();
