@@ -1,5 +1,6 @@
 #include "vector.h"
 
+#include "trig_normalization.h"
 #include <math.h>
 
 Vector* vectorSet(Vector* vec, float x, float y) {
@@ -22,14 +23,14 @@ Vector* vectorMul(Vector* vec, float v) {
 
 Vector* rotate(Vector* vec, float angle) {
   float tx = vec->x;
-  vec->x = tx * cosf(angle) - vec->y * sinf(angle);
-  vec->y = tx * sinf(angle) + vec->y * cosf(angle);
+  vec->x = tx * normalized_cosf(angle) - vec->y * normalized_sinf(angle);
+  vec->y = tx * normalized_sinf(angle) + vec->y * normalized_cosf(angle);
   return vec;
 }
 
 Vector* addWithAngle(Vector* vec, float angle, float length) {
-  vec->x += cosf(angle) * length;
-  vec->y += sinf(angle) * length;
+  vec->x += normalized_cosf(angle) * length;
+  vec->y += normalized_sinf(angle) * length;
   return vec;
 }
 
