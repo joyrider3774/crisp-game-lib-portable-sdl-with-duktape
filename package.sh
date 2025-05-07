@@ -10,6 +10,6 @@ cp meta/Cglpsdl1.funkey-s.desktop opk/Cglpsdl1.funkey-s.desktop
 cp meta/explorer.desktop opk/explorer.desktop
 cp -r games opk/games
 
-mksquashfs ./opk Cglpsdl1.opk -all-root -noappend -no-exports -no-xattrs
+mksquashfs ./opk Cglpsdl1-duk.opk -all-root -noappend -no-exports -no-xattrs
 
 rm -r opk

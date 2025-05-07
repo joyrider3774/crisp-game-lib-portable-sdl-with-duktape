@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=cglpsdl1
-Comment=Crisp Games Library Portable
+Name=cglpsdl1-duk
+Comment=Crisp Games Library Portable (Duktape Version)
 Terminal=false
 Type=Application
 Exec=cglpsdl1 -f %f
