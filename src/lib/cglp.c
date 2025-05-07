@@ -25,6 +25,7 @@ extern PlaydateAPI *pd;
 #include "sound.h"
 #include "textPattern.h"
 #include "vector.h"
+#include "trig_normalization.h"
 
 #define STATE_TITLE 0
 #define STATE_IN_GAME 1
@@ -332,14 +333,14 @@ Collision arc(float centerX, float centerY, float radius, float angleFrom,
   }
   float ai = ao / lc;
   float a = af;
-  float p1x = radius * cosf(a) + centerX;
-  float p1y = radius * sinf(a) + centerY;
+  float p1x = radius * normalized_cosf(a) + centerX;
+  float p1y = radius * normalized_sinf(a) + centerY;
   float p2x, p2y;
   float ox, oy;
   for (int i = 0; i < lc; i++) {
     a += ai;
-    p2x = radius * cosf(a) + centerX;
-    p2y = radius * sinf(a) + centerY;
+    p2x = radius * normalized_cosf(a) + centerX;
+    p2y = radius * normalized_sinf(a) + centerY;
     ox = p2x - p1x;
     oy = p2y - p1y;
     drawLine(p1x, p1y, ox, oy, &hitCollision);

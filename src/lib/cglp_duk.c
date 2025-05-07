@@ -6,7 +6,7 @@
 #include "duk_print_alert.h"
 
 #include <ctype.h>
-
+#include "trig_normalization.h"
 #define MAX_FILE_SIZE 32768
 
 const char* CGLP_DUK_SHIM =

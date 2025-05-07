@@ -7,6 +7,7 @@
 #include <string.h>
 #include "machineDependent.h"
 #include "cglp.h"
+#include "trig_normalization.h"
 #include "cglpSDL1.h"
 #include <math.h>
 #include "CLoadGames.h"
@@ -49,9 +50,6 @@
 #define FPS_SAMPLES 10
 
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
-
-// Function to normalize angle to the range [0, 2pi]
-#define NORMALIZE_ANGLE(angle) (angle = fmodf(angle, 2 * M_PI), (angle < 0) ? (angle += 2 * M_PI) : angle)
 
 static float mouseX, mouseY;
 static int prevRealMouseX = 0, prevRealMouseY = 0;
@@ -435,7 +433,7 @@ static void resetCharacterSprite() {
 // Simulate buggy sinf: restricts output to 0, 1, -1 based on 90° increments
 static float buggySinf(float angle)
 {
-    NORMALIZE_ANGLE(angle);  // Normalize angle to [0, 2π)
+    TRIG_NORMALIZE_ANGLE(angle);  // Normalize angle to [0, 2p)
 
     // Map angle to nearest 90 (p/2 radians)
     if (angle < M_PI_4 || angle >= (2 * M_PI - M_PI_4)) 
@@ -468,7 +466,7 @@ static float generateSineWave(float frequency, TimerType ticks)
     // Convert phase to float angle
     float phase_float = (2.0f * M_PI * phase) / PHASE_MAX;
     
-    return useBugSound ? buggySinf(phase_float) : sinf(phase_float);
+    return useBugSound ? buggySinf(phase_float) : normalized_sinf(phase_float);
 }
 
 // Audio callback
@@ -1056,7 +1054,23 @@ static void update()
     bool mouseUsed = getGame(currentGameIndex).usesMouse;
     setButtonState(!mouseUsed && keys[BUTTON_LEFT] == 1, !mouseUsed && keys[BUTTON_RIGHT] == 1, !mouseUsed && keys[BUTTON_UP] == 1,
         !mouseUsed && keys[BUTTON_DOWN] == 1, (keys[BUTTON_B] == 1) || (butState & SDL_BUTTON(3)), (keys[BUTTON_A] == 1) || (butState & SDL_BUTTON(1)));
-  
+    
+	// #undef BUTTON_GLOWSWITCH
+    // #undef BUTTON_MENU
+    // #undef BUTTON_VOLDOWN
+    // #undef BUTTON_VOLUP
+    // #undef BUTTON_SOUNDSWITCH
+    // #undef BUTTON_DARKSWITCH
+
+    // #define BUTTON_GLOWSWITCH SDLK_g
+    // #define BUTTON_MENU SDLK_ESCAPE
+    // #define BUTTON_VOLDOWN SDLK_PAGEDOWN
+    // #define BUTTON_VOLUP SDLK_PAGEUP
+    // #define BUTTON_SOUNDSWITCH SDLK_s
+    // #define BUTTON_DARKSWITCH SDLK_d
+    // setButtonState(keys[SDLK_LEFT] == 1, keys[SDLK_RIGHT] == 1, keys[SDLK_UP] == 1,
+    //    keys[SDLK_DOWN] == 1, keys[SDLK_c] == 1, keys[SDLK_x] == 1);
+	
     if (mouseUsed)
     {
         if(keys[BUTTON_RIGHT] == 1)
