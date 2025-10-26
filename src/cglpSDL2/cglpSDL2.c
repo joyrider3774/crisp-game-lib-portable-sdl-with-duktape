@@ -1110,16 +1110,16 @@ static void update() {
     
     if (mouseUsed)
     {
-        if(GameInput->Buttons.ButRight)
+        if(GameInput->Buttons.ButRight || GameInput->Buttons.ButDpadRight)
             mouseX += WINDOW_WIDTH /100;
         
-        if(GameInput->Buttons.ButLeft)
+        if(GameInput->Buttons.ButLeft || GameInput->Buttons.ButDpadLeft)
             mouseX -= WINDOW_WIDTH /100;
             
-        if(GameInput->Buttons.ButUp)
+        if(GameInput->Buttons.ButUp || GameInput->Buttons.ButDpadUp)
             mouseY -= WINDOW_HEIGHT /100;
     
-        if(GameInput->Buttons.ButDown)
+        if(GameInput->Buttons.ButDown || GameInput->Buttons.ButDpadDown)
             mouseY += WINDOW_HEIGHT /100;
 
         mouseX = clamp(mouseX, 0, WINDOW_WIDTH - 2*offsetX -1);
