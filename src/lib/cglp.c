@@ -623,7 +623,7 @@ static int scoreBoardsIndex;
 static void initScore(char* gameTitle)
 {
   score = prevScore = hiScore = 0;
-  for (int i = 0; i < gameCount; i++)
+  for (int i = 0; i < MAX_GAME_COUNT; i++)
     if(strcmp(hiScores[i].title, gameTitle) == 0)
     {
       hiScore = hiScores[i].hiScore;
@@ -1015,7 +1015,7 @@ static void initGameOver() {
     char* title = getGame(currentGameIndex).title;
     int foundIndex = -1;
     int freeIndex = -1;
-    for (int i = 0; i < gameCount; i++)
+    for (int i = 0; i < MAX_GAME_COUNT; i++)
     {
       if ((strlen(hiScores[i].title) == 0) && (hiScores[i].hiScore == 0) && (freeIndex = -1))
       {
@@ -1150,11 +1150,11 @@ void initGame() {
   initInput();
   addMenu();
   addGames();
-  if (gameCount == 2) {
-    restartGame(1);
-  } else {
+  //if (gameCount == 2) {
+  //  restartGame(1);
+  //} else {
     goToMenu();
-  }
+  //}
 }
 
 //! Update game frames every 1/60 second.

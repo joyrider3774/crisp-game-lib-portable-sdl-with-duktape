@@ -16,6 +16,8 @@
 // TODO: override with cli argument
 #define GAMES_DIRECTORY "games"
 
+char singleJSFile[2048] = "";
+
 #ifdef _WIN32
 #include <windows.h>
 
@@ -23,7 +25,12 @@ int md_readJSGame(char* filename, char* buf, int buflen) {
     buflen -= 1; // allow for space for null termination
 
     char filepath[MAX_PATH] = GAMES_DIRECTORY "\\";
-    strcat(filepath, filename);
+   
+    size_t len = strlen(singleJSFile);
+    if (len > 3)
+        strncpy(filepath, singleJSFile, MAX_PATH);
+    else
+        strcat(filepath, filename);
 
     HANDLE hFile = CreateFile(filepath, GENERIC_READ, FILE_SHARE_READ, NULL,
         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -50,6 +57,33 @@ int md_readJSGame(char* filename, char* buf, int buflen) {
 #else
 int md_readJSGame(char* filename, char* buf, int buflen) {
     buflen -= 1; // allow for space for null termination
+    size_t flen = strlen(singleJSFile);
+    if (flen > 3)
+    {
+        FILE* fp;
+        fp = fopen(singleJSFile, "r");
+        if (fp)
+        {
+            size_t len = fread((void*)buf, 1, buflen, fp);
+            if (!feof(fp) && ferror(fp)) {
+                buf[0] = '\0';  // return zero length string
+                consoleLog("fread: Error reading game %s\n", filename);
+                return -1;
+            }
+
+            buf[len] = '\0'; // ensure null termination
+            fclose(fp);
+            return len;
+
+        }
+        else
+        {
+            buf[0] = '\0';  // return zero length string
+            consoleLog("fread: Error reading game %s\n", filename);
+            return -1;
+        }
+    }
+
     int dirfd = open(GAMES_DIRECTORY, O_DIRECTORY);
     if (dirfd < 0) {
         consoleLog("open: Error opening directory %s: error %d\n", GAMES_DIRECTORY, errno);
@@ -98,6 +132,13 @@ void md_loadJSGames() {
     char* filenames[MAX_GAME_COUNT];
     int filenameCount = 0;
 
+    size_t len = strlen(singleJSFile);
+    if (len > 3)
+    {
+        addJSGameFromFile(_strdup(singleJSFile));
+        return;
+    }
+
     WIN32_FIND_DATA findData;
     HANDLE hFind = INVALID_HANDLE_VALUE;
 
@@ -133,6 +174,13 @@ void md_loadJSGames() {
 void md_loadJSGames() {
     char* filenames[MAX_GAME_COUNT];
     int filenameCount = 0;
+
+    size_t len = strlen(singleJSFile);
+    if (len > 3)
+    {
+        addJSGameFromFile(strdup(singleJSFile));
+        return;
+    }
 
     DIR *directory = opendir(GAMES_DIRECTORY);
     if (directory == NULL)

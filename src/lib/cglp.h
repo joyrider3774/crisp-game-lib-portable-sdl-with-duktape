@@ -16,7 +16,7 @@
 #include "machineDependent.h"
 #include "vector.h"
 
-#define MAX_GAME_COUNT 250
+#define MAX_GAME_COUNT 1000
 
 #define FPS 60
 
@@ -201,6 +201,8 @@ EXTERNC void setButtonState(bool left, bool right, bool up, bool down, bool b,
                             bool a);
 EXTERNC void setMousePos(float x, float y);
 EXTERNC void updateFrame();
+
+EXTERNC char singleJSFile[2048];
 /// \endcond
 
 //! Iterate over an `array` with variable `index`

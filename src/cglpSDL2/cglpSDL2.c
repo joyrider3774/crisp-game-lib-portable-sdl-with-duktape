@@ -172,7 +172,7 @@ static void resetGame(Game *game)
         return;
 
     int freeIndex = -1;
-    for (int i = 0; i < gameCount; i++)
+    for (int i = 0; i < MAX_GAME_COUNT; i++)
     {
         if((freeIndex == -1) && (strlen(gameOverLays[i].title) == 0))
             freeIndex = i;
@@ -320,7 +320,7 @@ static void DestroyCRTEffect(CRTEffect* effect)
 static void loadGameOverlays()
 {
     //initialize
-    for (int i = 0; i < gameCount; i++)
+    for (int i = 0; i < MAX_GAME_COUNT; i++)
     {
         memset(gameOverLays[i].title, 0, 100 * sizeof(char));
         gameOverLays[i].overlay = 0;
@@ -330,13 +330,13 @@ static void loadGameOverlays()
     onResetGame = resetGame;
     //load
     char fileName[FILENAME_MAX];
-    sprintf(fileName,"%s/.cglpoverlays.dat",SDL_getenv("HOME") == NULL ? ".": SDL_getenv("HOME"));
+    sprintf(fileName,"%s/.cglpoverlays2.dat",SDL_getenv("HOME") == NULL ? ".": SDL_getenv("HOME"));
     FILE *fp;
     fp = fopen(fileName, "rb");
     if(fp)
     {
         int i = 0;
-        while (!feof(fp) && (i < gameCount))
+        while (!feof(fp) && (i < MAX_GAME_COUNT))
         {
             fread(gameOverLays[i].title, sizeof(char), 100, fp);
             fread(&gameOverLays[i].overlay, sizeof(int), 1, fp);
@@ -351,12 +351,12 @@ static void loadGameOverlays()
 static void saveGameOverlays()
 {
     char fileName[FILENAME_MAX];
-    sprintf(fileName,"%s/.cglpoverlays.dat", SDL_getenv("HOME") == NULL ? ".": SDL_getenv("HOME"));
+    sprintf(fileName,"%s/.cglpoverlays2.dat", SDL_getenv("HOME") == NULL ? ".": SDL_getenv("HOME"));
     FILE *fp;
     fp = fopen(fileName, "wb");
     if(fp)
     {
-        for (int i = 0; i < gameCount; i++)
+        for (int i = 0; i < MAX_GAME_COUNT; i++)
         {
             if(strlen(gameOverLays[i].title) > 0)
             {
@@ -373,13 +373,13 @@ static void saveGameOverlays()
 static void loadHighScores()
 {
     char fileName[FILENAME_MAX];
-    sprintf(fileName,"%s/.cglpscore.dat", SDL_getenv("HOME") == NULL ? ".": SDL_getenv("HOME"));
+    sprintf(fileName,"%s/.cglpscore2.dat", SDL_getenv("HOME") == NULL ? ".": SDL_getenv("HOME"));
     FILE *fp;
     fp = fopen(fileName, "rb");
     if(fp)
     {
         int i = 0;
-        while (!feof(fp) && (i < gameCount))
+        while (!feof(fp) && (i < MAX_GAME_COUNT))
         {
             fread(hiScores[i].title, sizeof(char), 100, fp);
             fread(&hiScores[i].hiScore, sizeof(int), 1, fp);
@@ -392,12 +392,12 @@ static void loadHighScores()
 static void saveHighScores()
 {
     char fileName[FILENAME_MAX];
-    sprintf(fileName,"%s/.cglpscore.dat", SDL_getenv("HOME") == NULL ? ".": SDL_getenv("HOME"));
+    sprintf(fileName,"%s/.cglpscore2.dat", SDL_getenv("HOME") == NULL ? ".": SDL_getenv("HOME"));
     FILE *fp;
     fp = fopen(fileName, "wb");
     if(fp)
     {
-        for (int i = 0; i < gameCount; i++)
+        for (int i = 0; i < MAX_GAME_COUNT; i++)
         {
             if(strlen(hiScores[i].title) > 0)
             {                
@@ -1215,7 +1215,7 @@ static void update() {
             Game g = getGame(currentGameIndex);
             if((strlen(g.title) > 0) && (g.update != NULL))
             {         
-                for (int i = 0; i < gameCount; i++)
+                for (int i = 0; i < MAX_GAME_COUNT; i++)
                 {
                     if (strcmp(g.title, gameOverLays[i].title) == 0 )
                     {
@@ -1313,7 +1313,7 @@ static void update() {
             Game g = getGame(currentGameIndex);
             if((strlen(g.title) > 0) && (g.update != NULL))
             {         
-                for (int i = 0; i < gameCount; i++)
+                for (int i = 0; i < MAX_GAME_COUNT; i++)
                 {
                     if (strcmp(g.title, gameOverLays[i].title) == 0 )
                     {
@@ -1403,8 +1403,26 @@ int main(int argc, char** argv)
                         startgame[j - gamestart] = toupper(*j);
                 }
             }
+
+            if (strcmp(ext, ".js") == 0)
+            {
+                memset(singleJSFile, 0, 2048);
+                strncpy(singleJSFile, argv[i], 2048);
+                
+                memset(startgame, 0, 100);
+                char* gamestart = strrchr(argv[i], '/');
+                if (gamestart == NULL)
+                    gamestart = strrchr(argv[i], '\\');
+                if (gamestart != NULL)
+                {
+                    ext = strchr(gamestart, '.');
+                    gamestart++;
+                    for (char* j = gamestart; j < ext; j++)
+                        startgame[j - gamestart] = toupper(*j);
+                }
+            }
         }
-                    
+        
         if(strcmp(argv[i], "-cgl") == 0)
         {
             initGame();
@@ -1547,8 +1565,17 @@ int main(int argc, char** argv)
                         setButtonState(false,false,false,false,false,false);
                         for (int j = 0; j < 140; j++)
                             updateFrame();
-                        char filename[512];
-                        sprintf(filename, "./%s.bmp", getGame(i).title);
+                        char filename[2048];
+                        if (strlen(getGame(i).filename) > 0)
+                        {
+                            char tmp[1024];
+                            memset(tmp, 0, 1024);
+                            char* ext = strrchr(getGame(i).filename, '.');
+                            strncpy(tmp, getGame(i).filename, (ext - getGame(i).filename));
+                            sprintf(filename, "./%s.bmp", tmp);
+                        }
+                        else
+                            sprintf(filename, "./%s.bmp", getGame(i).title);
                         SDL_SaveBMP(view, filename);
                     }
                 }

@@ -26,16 +26,40 @@ duk_context* ctx = NULL;
 void updateJSFrame();
 
 char* getTitleFromFilename(char* filename) {
-    char *dot = strchr(filename, '.');
     char* title;
     int length;
-    if (!dot) {
+    char* slash = strrchr(filename, '\\');
+    if (!slash)
+        slash = strrchr(filename, '/');
+    
+    char* dot = NULL;
+    if (!slash)
+        dot = strchr(filename, '.');
+    else
+        dot = strchr(slash, '.');
+
+    if (!dot && !slash) {
         length = strlen(filename);
-    } else {
-        length = (dot - filename);
+        title = calloc(length + 1, sizeof(char));
+        strncpy(title, filename, length);
+
+    } 
+    else 
+    {
+        if (dot && !slash) {
+            length = (dot - filename);
+            title = calloc(length + 1, sizeof(char));
+            strncpy(title, filename, length);
+        }
+        else
+            if (dot && slash)
+            {
+                length = (dot - (slash+1));
+                title = calloc(length + 1, sizeof(char));
+                strncpy(title, slash+1, length);
+               
+            }
     }
-    title = calloc(length+1, sizeof(char));
-    strncpy(title, filename, length);
     for (size_t i = 0; i < strlen(title); i++) {
         title[i] = toupper(title[i]);
     }
